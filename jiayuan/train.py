@@ -21,7 +21,7 @@ def parse_args():
                         help='directory to store checkpointed models')
     parser.add_argument('--rnn_size', type=int, default=128,
                         help='size of RNN hidden state')
-    parser.add_argument('--num_layers', type=int, default=23,
+    parser.add_argument('--num_layers', type=int, default=1,
                         help='number of layers in the RNN')
     parser.add_argument('--model', type=str, default='gru',
                         help='rnn, gru, or lstm')
@@ -29,7 +29,7 @@ def parse_args():
                         help='minibatch size')
     parser.add_argument('--seq_length', type=int, default=20,
                         help='RNN sequence length')
-    parser.add_argument('--num_epochs', type=int, default=1,
+    parser.add_argument('--num_epochs', type=int, default=23,
                         help='number of epochs')
     parser.add_argument('--save_every', type=int, default=1000,
                         help='save frequency')
@@ -51,7 +51,7 @@ def train(args):
     class_threshold = 20
     char_threshold = 3
     test_ratio = 0.2
-    use_ori = False
+    use_ori = True
     data_loader = JyTextLoader(input_file=input_file, batch_size=args.batch_size,
                          max_seq_length=args.seq_length, class_threshold=class_threshold, char_threshold=char_threshold,
                          test_ratio=test_ratio, use_ori=use_ori)

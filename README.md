@@ -1,3 +1,6 @@
+# 本库特别内容
+见[此文件说明](/jiayuan/README.md)。
+
 # char-rnn-tensorflow
 Multi-layer Recurrent Neural Networks (LSTM, RNN) for character-level language models in Python using Tensorflow.
 

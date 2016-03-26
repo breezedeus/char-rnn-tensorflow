@@ -51,7 +51,7 @@ def train(args):
     class_threshold = 20
     char_threshold = 3
     test_ratio = 0.2
-    use_ori = True
+    use_ori = False
     data_loader = JyTextLoader(input_file=input_file, batch_size=args.batch_size,
                          max_seq_length=args.seq_length, class_threshold=class_threshold, char_threshold=char_threshold,
                          test_ratio=test_ratio, use_ori=use_ori)

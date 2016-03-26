@@ -70,7 +70,7 @@ class_threshold = 20
 (epoch 47), test_loss = 2.348, test_accuracy = 0.567
 </pre>
 
-# model=gru, lr=0.001, rnn_size=128, seq_length=20, num_layers=1
+# ``[BEST]`` model=gru, lr=0.001, rnn_size=128, seq_length=20, num_layers=1, use_ori=False
 <pre>
 2286/10900 (epoch 20), train_loss = 0.285, train_accuracy = 0.980, time/batch = 0.134
 2287/10900 (epoch 20), train_loss = 0.259, train_accuracy = 0.980, time/batch = 0.121

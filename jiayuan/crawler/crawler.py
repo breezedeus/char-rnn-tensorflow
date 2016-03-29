@@ -8,6 +8,9 @@ import os, sys, math
 
 #糗事百科爬虫类
 class QiuShiBaiKeCrawler:
+    """
+    抓取糗事百科的最新文本、历史、用户页
+    """
     #初始化方法，定义一些变量
     def __init__(self, data_dir):
         self.data_dir = data_dir

@@ -1,27 +1,44 @@
 __author__ = 'king'
 
 
-import sys, os
+import sys, os, time
 import re
 from bs4 import BeautifulSoup
+from util import md5str, connect_db, close_db
 
 
 class Joke(object):
     ANONYMOUS_AUTHOR_ID = 0
 
     def __init__(self, id, author, nickname, like_num, content):
-        self.id = long(id)
+        self.id = int(id)
         self.author = int(author)
         self.nickname = nickname
-        self.like_sum = int(like_num)
+        self.num_likes = int(like_num)
         self.content = content
+        self.md5_content = md5str(content)
+
+    def __eq__(self, other):
+        if isinstance(other, Joke):
+            return self.md5_content == other.md5_content
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.md5_content)
 
     def __cmp__(self, other):
-        if self.id != other.id:
-            return self.id - other.id
+        if self.md5_content < other.md5_content:
+            return -1
+        elif self.md5_content > other.md5_content:
+            return 1
+        else:
+            return 0
+        #if self.id != other.id:
+        #    return self.id - other.id
 
     def __str__(self):
-        alls = (self.id, self.author, self.nickname, self.like_sum, self.content)
+        alls = (self.id, self.author, self.nickname, self.num_likes, self.content)
         return 'id = %d, author = %d, nickname = %s, like_sum = %d, content = %s' % alls
 
 
@@ -62,17 +79,29 @@ class QiuShiBaiKeParser(object):
         return all_jokes
 
 
+def store_anonymous_jokes(jokes):
+    results = []
+    cur_time = int(time.time())
+    for joke in jokes:
+        results.append((joke.md5_content, 0, joke.id, joke.author, joke.num_likes, joke.content.decode('utf-8'), u'qiushibaike', cur_time))
+    conn = connect_db()
+    print len(set([r[0] for r in results]))
+    conn.executemany('REPLACE INTO JOKE VALUES (?,?,?,?,?,?,?,?)', results)
+    conn.commit()
+    close_db(conn)
+
 if __name__ == '__main__':
     #data_dir = sys.argv[1]
-    data_dir = '../../data/qiushibaike/textnew'
+    data_dir = '../../data/qiushibaike/textnew/2016.03.29'
     parser = QiuShiBaiKeParser()
     files = os.listdir(data_dir)
     files.sort()
     authors = set()
-    jokes_from_anonymous = []
+    jokes_from_anonymous = set()
     for file_name in files:
         jokes = parser.parse_file(os.path.join(data_dir, file_name))
         authors.update([joke.author for joke in jokes])
-        jokes_from_anonymous.append([joke for joke in jokes if joke.author == Joke.ANONYMOUS_AUTHOR_ID])
+        jokes_from_anonymous.update([joke for joke in jokes if joke.author == Joke.ANONYMOUS_AUTHOR_ID])
     print(len(authors))
     print(len(jokes_from_anonymous))
+    store_anonymous_jokes(jokes_from_anonymous)

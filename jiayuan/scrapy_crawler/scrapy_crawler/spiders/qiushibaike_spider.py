@@ -15,6 +15,8 @@ class QiuShiBaiKeSpider(scrapy.Spider):
     start_urls = [
         "http://www.qiushibaike.com/textnew/",
         "http://www.qiushibaike.com/history/",
+        "http://www.qiushibaike.com/hot/",
+        "http://www.qiushibaike.com",
     ]
 
     def __init__(self, *args, **kwargs):

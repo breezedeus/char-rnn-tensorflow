@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/bin/bash
 
-while 1; do
+while true; do
     date
     scrapy crawl qiushibaike
     sleep 60

@@ -110,7 +110,11 @@ class QiuShiBaiKeSpider(scrapy.Spider):
                     url = response.urljoin(nextpage_link)
                     #print(url)
                     return scrapy.Request(url, callback=self.parse)
-        yield get_nextpage()
+                else:
+                    return None
+        nextpage_request = get_nextpage()
+        if nextpage_request is not None:
+            yield nextpage_request
 
 
     def parse_authorpage(self, response):

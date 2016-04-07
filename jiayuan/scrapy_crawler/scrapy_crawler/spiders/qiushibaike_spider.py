@@ -14,10 +14,10 @@ class QiuShiBaiKeSpider(scrapy.Spider):
     allowed_domains = ['qiushibaike.com']
     start_urls = [
         "http://www.qiushibaike.com/textnew/",
-        #"http://www.qiushibaike.com/history/",
-        #"http://www.qiushibaike.com/text/",
-        #"http://www.qiushibaike.com/hot/",
-        #"http://www.qiushibaike.com",
+        "http://www.qiushibaike.com/history/",
+        "http://www.qiushibaike.com/text/",
+        "http://www.qiushibaike.com/hot/",
+        "http://www.qiushibaike.com",
     ]
 
     def __init__(self, *args, **kwargs):

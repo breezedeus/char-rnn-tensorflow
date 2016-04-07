@@ -29,7 +29,7 @@ class QiuShiBaiKePipeline(object):
         self.conn.execute('REPLACE INTO %s VALUES (?,?,?,?,?,?)' % JOKE_TABLE, one_row)
         self.conn.commit()
         self.num_jokes += 1
-        print('num_jokes = %d, with joke_id = %d' % (self.num_jokes, joke_item['id']))
+        print('num_jokes = %d, with joke_id = %d, author_id = %d' % (self.num_jokes, joke_item['id'], joke_item['author']))
 
     def process_item(self, item, spider):
         if isinstance(item, QiuShiBaiKeAuthorItem):

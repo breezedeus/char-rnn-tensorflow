@@ -14,10 +14,10 @@ class QiuShiBaiKeSpider(scrapy.Spider):
     allowed_domains = ['qiushibaike.com']
     start_urls = [
         "http://www.qiushibaike.com/textnew/",
-        "http://www.qiushibaike.com/history/",
-        "http://www.qiushibaike.com/text/",
-        "http://www.qiushibaike.com/hot/",
-        "http://www.qiushibaike.com",
+        #"http://www.qiushibaike.com/history/",
+        #"http://www.qiushibaike.com/text/",
+        #"http://www.qiushibaike.com/hot/",
+        #"http://www.qiushibaike.com",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -134,7 +134,8 @@ class QiuShiBaiKeSpider(scrapy.Spider):
             author_item['name'] = author_name
             author_item['status'] = 0
             author_item['update_time'] = int(time.time())
-            yield author_item
+            store_author(conn=self.conn, author_item=author_item)
+            #yield author_item
 
 
         article_id_pattern = re.compile('/article/([0-9]*)$', re.S)

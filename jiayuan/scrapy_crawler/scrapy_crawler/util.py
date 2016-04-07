@@ -63,6 +63,30 @@ def set_author_status(conn, author_id, status=1):
     conn.commit()
 
 
+NUM_NEW_AUTHORS = 0
+def store_author(conn, author_item):
+    global NUM_NEW_AUTHORS
+    if author_already_existed(conn, author_item['id']):
+        return
+    one_row = author_item['id'], author_item['name'], author_item['status'], author_item['update_time']
+    conn.execute('REPLACE INTO %s VALUES (?,?,?,?)' % AUTHOR_TABLE, one_row)
+    conn.commit()
+    NUM_NEW_AUTHORS += 1
+    print('num_authors = %d, with author_id = %d' % (NUM_NEW_AUTHORS, author_item['id']))
+
+
+NUM_NEW_JOKES = 0
+def store_joke(conn, joke_item):
+    global NUM_NEW_JOKES
+    if joke_already_existed(conn, joke_item['id']):
+        return
+    one_row = joke_item['id'], joke_item['author'], joke_item['num_likes'], joke_item['content'], 'qiushibaike', joke_item['update_time']
+    conn.execute('REPLACE INTO %s VALUES (?,?,?,?,?,?)' % JOKE_TABLE, one_row)
+    conn.commit()
+    NUM_NEW_JOKES += 1
+    print('num_jokes = %d, with joke_id = %d, author_id = %d' % (NUM_NEW_JOKES, joke_item['id'], joke_item['author']))
+
+
 def md5str(str):
     return md5.new(str).hexdigest()
 

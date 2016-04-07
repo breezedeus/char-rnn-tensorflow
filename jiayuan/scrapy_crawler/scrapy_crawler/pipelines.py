@@ -6,7 +6,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 from scrapy_crawler.items import QiuShiBaiKeJokeItem, QiuShiBaiKeAuthorItem
-from scrapy_crawler.util import connect_db, close_db
+from scrapy_crawler.util import *
 
 
 class QiuShiBaiKePipeline(object):
@@ -17,25 +17,16 @@ class QiuShiBaiKePipeline(object):
     def close_spider(self, spider):
         close_db(self.conn)
 
-    def _joke_already_existed(self, joke_id):
-        cursor = self.conn.execute('select author from JOKE where id = %d' % joke_id)
-        for row in cursor:
-            status = row[0]
-            if status is not None:
-                return True
-            else:
-                return False
-
     def _store_author(self, author_item):
         one_row = author_item['id'], author_item['name'], author_item['status'], author_item['update_time']
-        self.conn.execute('REPLACE INTO QSBK_AUTHOR VALUES (?,?,?,?)', one_row)
+        self.conn.execute('REPLACE INTO %s VALUES (?,?,?,?)' % AUTHOR_TABLE, one_row)
         self.conn.commit()
 
     def _store_joke(self, joke_item):
-        if self._joke_already_existed(joke_item['id']):
+        if joke_already_existed(self.conn, joke_item['id']):
             return
         one_row = joke_item['id'], joke_item['author'], joke_item['num_likes'], joke_item['content'], 'qiushibaike', joke_item['update_time']
-        self.conn.execute('REPLACE INTO JOKE VALUES (?,?,?,?,?,?)', one_row)
+        self.conn.execute('REPLACE INTO %s VALUES (?,?,?,?,?,?)' % JOKE_TABLE, one_row)
         self.conn.commit()
         self.num_jokes += 1
         print('num_jokes = %d, with joke_id = %d' % (self.num_jokes, joke_item['id']))

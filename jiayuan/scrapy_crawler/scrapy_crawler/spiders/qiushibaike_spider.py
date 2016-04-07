@@ -7,7 +7,7 @@ import scrapy
 
 from scrapy_crawler.items import QiuShiBaiKeJokeItem, QiuShiBaiKeAuthorItem, ANONYMOUS_AUTHOR_ID
 from scrapy_crawler.settings import STORAGE_DIR
-from scrapy_crawler.util import connect_db, close_db
+from scrapy_crawler.util import *
 
 class QiuShiBaiKeSpider(scrapy.Spider):
     name = 'qiushibaike'
@@ -27,28 +27,6 @@ class QiuShiBaiKeSpider(scrapy.Spider):
 
     def close(self, reason):
         close_db(self.conn)
-
-    def _author_already_crawled(self, author_id):
-        cursor = self.conn.execute('select status from QSBK_AUTHOR where id = %d' % author_id)
-        for row in cursor:
-            status = row[0]
-            if status is not None and status == 1:
-                return False
-            else:
-                return True
-
-    def _set_author_status(self, author_id, status=1):
-        self.conn.execute('update QSBK_AUTHOR set status = %d where id = %d' % (status, author_id))
-        self.conn.commit()
-
-    def _joke_already_existed(self, joke_id):
-        cursor = self.conn.execute('select author from JOKE where id = %d' % joke_id)
-        for row in cursor:
-            status = row[0]
-            if status is not None:
-                return True
-            else:
-                return False
 
     def parse(self, response):
         self.logger.info('Parsing url %s ...', response.url)
@@ -70,13 +48,13 @@ class QiuShiBaiKeSpider(scrapy.Spider):
         for joke in response.xpath('//div[@class="article block untagged mb15"]'):
             article_id = joke.xpath('@id').extract_first()
             article_id = int(re.findall(article_id_pattern, article_id)[0].strip())
-            if self._joke_already_existed(article_id):
+            if joke_already_existed(conn=self.conn, joke_id=article_id):
                 return
             author_link = joke.xpath('div[@class="author clearfix"]/a/@href')
             author_link = author_link.extract_first()
             if author_link is not None:
                 author_id = int(re.findall(author_pattern, author_link)[0].strip())
-                if not self._author_already_crawled(author_id=author_id):
+                if not author_already_crawled(conn=self.conn, author_id=author_id):
                     author_name = joke.xpath('div[@class="author clearfix"]/a/h2/text()').extract_first().strip()
                     author_item = QiuShiBaiKeAuthorItem()
                     author_item['id'] = author_id
@@ -149,6 +127,16 @@ class QiuShiBaiKeSpider(scrapy.Spider):
                 f.write(response.body)
         store()
 
+        if not author_already_existed(conn=self.conn, author_id=author_id):
+            author_name = response.xpath('//span[@class="user_center"]/text()').extract_first().strip()
+            author_item = QiuShiBaiKeAuthorItem()
+            author_item['id'] = author_id
+            author_item['name'] = author_name
+            author_item['status'] = 0
+            author_item['update_time'] = int(time.time())
+            yield author_item
+
+
         article_id_pattern = re.compile('/article/([0-9]*)$', re.S)
         numlikes_pattern = re.compile('([0-9]*).*?', re.S)
         for joke in response.xpath('//div[@class="qiushi_body article clearfix"]/div[@class="content clearfix"]'):
@@ -183,13 +171,13 @@ class QiuShiBaiKeSpider(scrapy.Spider):
         if nextpage_request is not None:
             yield nextpage_request
         else:
-            self._set_author_status(author_id=author_id, status=1)
+            set_author_status(conn=self.conn, author_id=author_id, status=1)
 
         def get_nextauthor(author_id):
             while self.max_num_crawled_author_per_time > 0:
                 author_id += 1
                 self.max_num_crawled_author_per_time -= 1
-                if self._author_already_crawled(author_id=author_id):
+                if author_already_crawled(conn=self.conn, author_id=author_id):
                     continue
                 url = os.path.join('http://www.qiushibaike.com/users', str(author_id))
                 return scrapy.Request(url, callback=self.parse_authorpage)

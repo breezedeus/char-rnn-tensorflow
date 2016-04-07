@@ -1,5 +1,6 @@
 __author__ = 'king'
 import sqlite3
+import logging
 import md5
 
 AUTHOR_TABLE = 'QSBK_AUTHOR'
@@ -72,7 +73,7 @@ def store_author(conn, author_item):
     conn.execute('REPLACE INTO %s VALUES (?,?,?,?)' % AUTHOR_TABLE, one_row)
     conn.commit()
     NUM_NEW_AUTHORS += 1
-    print('num_authors = %d, with author_id = %d' % (NUM_NEW_AUTHORS, author_item['id']))
+    logging.info('num_authors = %d, with author_id = %d' % (NUM_NEW_AUTHORS, author_item['id']))
 
 
 NUM_NEW_JOKES = 0
@@ -84,7 +85,7 @@ def store_joke(conn, joke_item):
     conn.execute('REPLACE INTO %s VALUES (?,?,?,?,?,?)' % JOKE_TABLE, one_row)
     conn.commit()
     NUM_NEW_JOKES += 1
-    print('num_jokes = %d, with joke_id = %d, author_id = %d' % (NUM_NEW_JOKES, joke_item['id'], joke_item['author']))
+    logging.info('num_jokes = %d, with joke_id = %d, author_id = %d' % (NUM_NEW_JOKES, joke_item['id'], joke_item['author']))
 
 
 def md5str(str):

@@ -23,6 +23,7 @@ class QiuShiBaiKeSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(QiuShiBaiKeSpider, self).__init__(*args, **kwargs)
         self.conn = connect_db()
+        self.max_num_crawled_author_per_time = 1000
 
     def close(self, reason):
         close_db(self.conn)
@@ -128,7 +129,10 @@ class QiuShiBaiKeSpider(scrapy.Spider):
             for i, seg in enumerate(url_segs):
                 if seg == 'users' and i+1 <= length:
                     return int(url_segs[i+1])
+            return None
         author_id = get_author_id()
+        if author_id is None:
+            return
 
         def store():
             data_dir = os.path.join(STORAGE_DIR, 'qiushibaike')
@@ -180,6 +184,19 @@ class QiuShiBaiKeSpider(scrapy.Spider):
             yield nextpage_request
         else:
             self._set_author_status(author_id=author_id, status=1)
+
+        def get_nextauthor(author_id):
+            if self.max_num_crawled_author_per_time <= 0:
+                return None
+            next_authorid = author_id + 1
+            if self._author_already_crawled(author_id=next_authorid):
+                return None
+            self.max_num_crawled_author_per_time -= 1
+            url = os.path.join('http://www.qiushibaike.com/users', str(next_authorid))
+            return scrapy.Request(url, callback=self.parse_authorpage)
+        nextauthor_request = get_nextauthor(author_id)
+        if nextauthor_request is not None:
+            yield nextauthor_request
 
 
     def parse_xxx(self, response):

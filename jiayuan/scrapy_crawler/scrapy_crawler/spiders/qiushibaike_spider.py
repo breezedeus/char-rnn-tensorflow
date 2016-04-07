@@ -23,7 +23,7 @@ class QiuShiBaiKeSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(QiuShiBaiKeSpider, self).__init__(*args, **kwargs)
         self.conn = connect_db()
-        self.max_num_crawled_author_per_time = 1000
+        self.max_num_crawled_author_per_time = 50
 
     def close(self, reason):
         close_db(self.conn)

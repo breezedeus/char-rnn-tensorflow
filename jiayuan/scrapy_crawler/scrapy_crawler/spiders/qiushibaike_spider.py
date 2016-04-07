@@ -186,14 +186,14 @@ class QiuShiBaiKeSpider(scrapy.Spider):
             self._set_author_status(author_id=author_id, status=1)
 
         def get_nextauthor(author_id):
-            if self.max_num_crawled_author_per_time <= 0:
-                return None
-            next_authorid = author_id + 1
-            if self._author_already_crawled(author_id=next_authorid):
-                return None
-            self.max_num_crawled_author_per_time -= 1
-            url = os.path.join('http://www.qiushibaike.com/users', str(next_authorid))
-            return scrapy.Request(url, callback=self.parse_authorpage)
+            while self.max_num_crawled_author_per_time > 0:
+                author_id += 1
+                self.max_num_crawled_author_per_time -= 1
+                if self._author_already_crawled(author_id=author_id):
+                    continue
+                url = os.path.join('http://www.qiushibaike.com/users', str(author_id))
+                return scrapy.Request(url, callback=self.parse_authorpage)
+            return None
         nextauthor_request = get_nextauthor(author_id)
         if nextauthor_request is not None:
             yield nextauthor_request

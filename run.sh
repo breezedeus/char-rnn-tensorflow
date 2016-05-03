@@ -1,6 +1,6 @@
 # coding=utf8
 #!/bin/bash
-cur_dir=`dirname $0`
+cur_dir=`cd $(dirname "$0"); pwd`
 
 code_dir="${cur_dir}/jiayuan/cn_char_rnn"
 data_dir="${cur_dir}/data/qiushibaike"

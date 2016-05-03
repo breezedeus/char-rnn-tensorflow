@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger('cn-char-rnn')
 logger.setLevel('INFO')
 
-from jiayuan.cn_char_rnn.cn_textloader import CnTextLoader
+from cn_textloader import CnTextLoader
 from model import Model
 
 def main():

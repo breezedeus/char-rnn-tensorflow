@@ -7,6 +7,10 @@ import os
 import cPickle
 import logging
 logger = logging.getLogger('cn-char-rnn')
+myhandler = logging.StreamHandler()
+myformatter = logging.Formatter(fmt='%(asctime)s-%(levelname)s: %(message)s')
+myhandler.setFormatter(myformatter)
+logger.addHandler(myhandler)
 logger.setLevel('INFO')
 
 from cn_textloader import CnTextLoader

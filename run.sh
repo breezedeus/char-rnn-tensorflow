@@ -1,7 +1,9 @@
 # coding=utf8
 #!/bin/bash
-code_dir='jiayuan/cn_char_rnn'
-data_dir='data/qiushibaike'
+cur_dir=`dirname $0`
+
+code_dir="${cur_dir}/jiayuan/cn_char_rnn"
+data_dir="${cur_dir}/data/qiushibaike"
 
 # tokenize raw jokes
 #python ${code_dir}/tokenize_cn.py ${data_dir}/input.txt ${data_dir}/tokenized/input.txt

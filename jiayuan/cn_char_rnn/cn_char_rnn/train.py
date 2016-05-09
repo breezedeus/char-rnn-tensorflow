@@ -1,4 +1,5 @@
-import numpy as np
+from __future__ import absolute_import
+
 import tensorflow as tf
 
 import argparse
@@ -13,14 +14,14 @@ myhandler.setFormatter(myformatter)
 logger.addHandler(myhandler)
 logger.setLevel('INFO')
 
-from cn_textloader import CnTextLoader
-from model import Model
+from cn_char_rnn.cn_textloader import CnTextLoader
+from cn_char_rnn.model import Model
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default='data/tinyshakespeare',
                        help='data directory containing input.txt')
-    parser.add_argument('--save_dir', type=str, default='save',
+    parser.add_argument('--save_dir', type=str, default='output_data/save',
                        help='directory to store checkpointed models')
     parser.add_argument('--rnn_size', type=int, default=128,
                        help='size of RNN hidden state')

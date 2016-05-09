@@ -1,15 +1,16 @@
 # coding=utf8
-import numpy as np
-import tensorflow as tf
+from __future__ import absolute_import
 
 import argparse
 import time
 import os
-import cPickle
+
+import numpy as np
+import tensorflow as tf
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 
-from jy_textloader import JyTextLoader
+from jiayuan.rnn_classification.jy_textloader import JyTextLoader
 from model import Model
 
 

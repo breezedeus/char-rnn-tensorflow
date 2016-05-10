@@ -6,14 +6,8 @@ import argparse
 import time
 import os
 import cPickle
-import logging
-logger = logging.getLogger('cn-char-rnn')
-myhandler = logging.StreamHandler()
-myformatter = logging.Formatter(fmt='%(asctime)s-%(levelname)s: %(message)s')
-myhandler.setFormatter(myformatter)
-logger.addHandler(myhandler)
-logger.setLevel('INFO')
 
+from cn_char_rnn.helper import LOGGER
 from cn_char_rnn.cn_textloader import CnTextLoader
 from cn_char_rnn.model import Model
 
@@ -49,7 +43,7 @@ def main():
     train(args)
 
 def train(args):
-    logger.info(args.use_ori)
+    LOGGER.info(args)
     data_loader = CnTextLoader(args.data_dir, args.batch_size, args.seq_length, bool(args.use_ori))
     args.vocab_size = data_loader.vocab_size
 
@@ -73,14 +67,14 @@ def train(args):
                 feed = {model.input_data: x, model.targets: y, model.initial_state: state}
                 train_loss, state, _ = sess.run([model.cost, model.final_state, model.train_op], feed)
                 end = time.time()
-                logger.info("{}/{} (epoch {}), train_loss = {:.3f}, time/batch = {:.3f}" \
+                LOGGER.info("{}/{} (epoch {}), train_loss = {:.3f}, time/batch = {:.3f}" \
                     .format(e * data_loader.num_batches + b,
                             args.num_epochs * data_loader.num_batches,
                             e, train_loss, end - start))
                 if (e * data_loader.num_batches + b) % args.save_every == 0:
                     checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
                     saver.save(sess, checkpoint_path, global_step = e * data_loader.num_batches + b)
-                    logger.info("model saved to {}".format(checkpoint_path))
+                    LOGGER.info("model saved to {}".format(checkpoint_path))
 
 if __name__ == '__main__':
     main()

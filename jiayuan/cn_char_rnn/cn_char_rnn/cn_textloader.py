@@ -1,20 +1,34 @@
 # coding=utf8
+from __future__ import absolute_import
+
 import os
 import collections
 import cPickle
 import numpy as np
 
+from cn_char_rnn.helper import tokenize_cn
 
 class CnTextLoader():
+    _INPUT_FILE = 'input.txt'
+    _VOCAB_FILE = 'vocab.pkl'
+    _DATA_FILE = 'data.npy'
+
     def __init__(self, data_dir, batch_size, seq_length, use_ori=True):
+        if not use_ori:
+            tokenized_data_dir = os.path.join(data_dir, 'tokenized')
+            input_file = os.path.join(data_dir, CnTextLoader._INPUT_FILE)
+            output_file = os.path.join(tokenized_data_dir, CnTextLoader._INPUT_FILE)
+            if not os.path.exists(output_file):
+                tokenize_cn(input_file=input_file, output_file=output_file)
+            data_dir = tokenized_data_dir
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.seq_length = seq_length
         self.use_ori = use_ori
 
-        input_file = os.path.join(data_dir, "input.txt")
-        vocab_file = os.path.join(data_dir, "vocab.pkl")
-        tensor_file = os.path.join(data_dir, "data.npy")
+        input_file = os.path.join(data_dir, CnTextLoader._INPUT_FILE)
+        vocab_file = os.path.join(data_dir, CnTextLoader._VOCAB_FILE)
+        tensor_file = os.path.join(data_dir, CnTextLoader._DATA_FILE)
 
         if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
             print "reading text file"

@@ -47,6 +47,8 @@ def train(args):
     data_loader = CnTextLoader(args.data_dir, args.batch_size, args.seq_length, bool(args.use_ori))
     args.vocab_size = data_loader.vocab_size
 
+    if not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
     with open(os.path.join(args.save_dir, 'config.pkl'), 'w') as f:
         cPickle.dump(args, f)
     with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'w') as f:

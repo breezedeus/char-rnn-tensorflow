@@ -65,6 +65,7 @@ class Model():
     def sample(self, sess, chars, vocab, num=200, prime='我 们'):
         state = self.cell.zero_state(1, tf.float32).eval()
         #prime = prime.decode('utf-8')
+        print('prime: ' + prime)
         prime = prime.split(' ')
         for char in prime[:-1]:
             x = np.zeros((1, 1))

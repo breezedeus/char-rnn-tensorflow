@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import jieba
 
 def get_logger(name):
     import logging
@@ -30,3 +32,28 @@ def get_logger(name):
     return logger
 
 LOGGER = get_logger('rnn-translate')
+
+
+def useori_tokenizer(line):
+    data = line.strip().decode('utf8')
+    data = ' '.join(data).encode('utf8')
+    return data.split(' ')
+
+
+def cut_line(line):
+    return jieba.cut(line.strip(), cut_all=False)
+
+
+def cut_tokenizer(line):
+    return cut_line(line)
+
+
+def tokenize_cn(input_file, output_file, sep=' '):
+    out_dir = os.path.dirname(output_file)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    with open(output_file, 'w') as out_f:
+        with open(input_file, 'r') as in_f:
+            for line in in_f:
+                seg_list = cut_line(line.strip())
+                out_f.write(sep.join(seg_list).encode('utf-8') + '\n')

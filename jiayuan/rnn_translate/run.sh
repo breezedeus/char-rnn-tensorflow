@@ -2,12 +2,12 @@
 
 cd `dirname $0`
 
-train_data_dir=data
+train_data_dir=data/qiuai
 output_dir=output_data
 
 size=128
 num_layers=1
-decode=True
+decode=False
 
 python rnn_translate/translate.py --data_dir ${train_data_dir} --train_dir ${output_dir} \
                     --en_vocab_size 40000 --fr_vocab_size 40000 \

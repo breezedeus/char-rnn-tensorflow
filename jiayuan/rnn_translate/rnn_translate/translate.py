@@ -38,11 +38,11 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorflow.models.rnn.translate import data_utils
 from tensorflow.models.rnn.translate import seq2seq_model
 
-from rnn_translate.helper import LOGGER
-LOGGER.info(sys.path)
+from rnn_translate.helper import LOGGER, useori_tokenizer, cut_tokenizer
+import data_utils
+#LOGGER.info(sys.path)
 
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
@@ -66,6 +66,8 @@ tf.app.flags.DEFINE_boolean("decode", False,
                             "Set to True for interactive decoding.")
 tf.app.flags.DEFINE_boolean("self_test", False,
                             "Run a self-test if this is set to True.")
+tf.app.flags.DEFINE_boolean("use_ori", True,
+                            "whether use original cn sentences, 0 for segmented cn sentences")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -131,8 +133,12 @@ def train():
   """Train a en->fr translation model using WMT data."""
   # Prepare WMT data.
   LOGGER.info("Preparing WMT data in %s" % FLAGS.data_dir)
+  if FLAGS.use_ori:
+      tokenizer = useori_tokenizer
+  else:
+      tokenizer = cut_tokenizer
   en_train, fr_train, en_dev, fr_dev, _, _ = data_utils.prepare_wmt_data(
-      FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size)
+      FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size, tokenizer=tokenizer)
 
   with tf.Session() as sess:
     # Create model.

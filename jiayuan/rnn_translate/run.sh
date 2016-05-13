@@ -7,7 +7,7 @@ output_dir=output_data
 
 size=512
 num_layers=1
-decode=False
+decode=True
 use_ori=True
 
 output_dir="${output_dir}/save${size}_${num_layers}"

@@ -69,14 +69,14 @@ def create_vocabulary(vocabulary_path, data_path, max_vocabulary_size,
     normalize_digits: Boolean; if true, all digits are replaced by 0s.
   """
   if not gfile.Exists(vocabulary_path):
-    print("Creating vocabulary %s from data %s" % (vocabulary_path, data_path))
+    LOGGER.info("Creating vocabulary %s from data %s" % (vocabulary_path, data_path))
     vocab = {}
     with gfile.GFile(data_path, mode="rb") as f:
       counter = 0
       for line in f:
         counter += 1
         if counter % 100000 == 0:
-          print("  processing line %d" % counter)
+          LOGGER.info("  processing line %d" % counter)
         tokens = tokenizer(line) if tokenizer else basic_tokenizer(line)
         for w in tokens:
           word = re.sub(_DIGIT_RE, b"0", w) if normalize_digits else w

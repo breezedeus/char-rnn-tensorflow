@@ -41,7 +41,9 @@ def useori_tokenizer(line):
 
 
 def cut_line(line):
-    return jieba.cut(line.strip(), cut_all=False)
+    token = jieba.cut(line.strip(), cut_all=False)
+    token_str = " ".join(token).encode('utf-8')
+    return token_str.split(" ")
 
 
 def cut_tokenizer(line):

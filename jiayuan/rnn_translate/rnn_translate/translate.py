@@ -239,6 +239,8 @@ def decode():
     while sentence:
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab, tokenizer=tokenizer)
+      if len(token_ids) >= _buckets[-1][0]:
+          token_ids = token_ids[-(_buckets[-1][0]-1):]
       print(token_ids)
       # Which bucket does it belong to?
       bucket_id = min([b for b in xrange(len(_buckets))

@@ -168,7 +168,7 @@ def data_to_token_ids(data_path, target_path, vocabulary_path,
     normalize_digits: Boolean; if true, all digits are replaced by 0s.
   """
   if not gfile.Exists(target_path):
-    print("Tokenizing data in %s" % data_path)
+    LOGGER.info("Tokenizing data in %s" % data_path)
     vocab, _ = initialize_vocabulary(vocabulary_path)
     with gfile.GFile(data_path, mode="rb") as data_file:
       with gfile.GFile(target_path, mode="w") as tokens_file:
@@ -176,7 +176,7 @@ def data_to_token_ids(data_path, target_path, vocabulary_path,
         for line in data_file:
           counter += 1
           if counter % 100000 == 0:
-            print("  tokenizing line %d" % counter)
+            LOGGER.info("  tokenizing line %d" % counter)
           token_ids = sentence_to_token_ids(line, vocab, tokenizer,
                                             normalize_digits)
           tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")

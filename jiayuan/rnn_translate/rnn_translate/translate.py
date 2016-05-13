@@ -109,6 +109,9 @@ def read_data(source_path, target_path, max_size=None):
             data_set[bucket_id].append([source_ids, target_ids])
             break
         source, target = source_file.readline(), target_file.readline()
+
+      for idx, bucket in enumerate(_buckets):
+          LOGGER.info("  size of bucket%d-[%d, %d]: %d" % (idx, bucket[0], bucket[1], len(data_set[idx])))
   return data_set
 
 

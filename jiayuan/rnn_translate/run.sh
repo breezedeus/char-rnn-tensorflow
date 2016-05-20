@@ -7,8 +7,11 @@ output_dir=output_data
 
 size=512
 num_layers=1
-decode=False
-use_ori=False
+decode=True
+use_ori=True
+
+## get statistics of q-a seq lengths
+#python rnn_translate/buckets_stat.py ${train_data_dir} train.ids40000
 
 output_dir="${output_dir}/save${size}_${num_layers}"
 python rnn_translate/translate.py --data_dir ${train_data_dir} --train_dir ${output_dir} \

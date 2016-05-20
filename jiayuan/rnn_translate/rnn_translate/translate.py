@@ -241,6 +241,7 @@ def decode():
       try:
         use_bs, sentence = sentence.split()
         use_bs = int(use_bs)
+        print('use_bs: ', str(use_bs))
 
         # Get token-ids for the input sentence.
         token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab, tokenizer=tokenizer)
@@ -276,6 +277,7 @@ def decode():
                     outputs = outputs[:outputs.index(data_utils.EOS_ID)]
                 # Print out French sentence corresponding to outputs.
                 print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+                print('done')
             #model.buckets[bucket_id] = (model.buckets[bucket_id][0], ori_bucket_size)
         else:
             # Get a 1-element batch to feed the sentence to the model.
@@ -292,7 +294,8 @@ def decode():
                 outputs = outputs[:outputs.index(data_utils.EOS_ID)]
             # Print out French sentence corresponding to outputs.
             print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
-      except NameError, e:
+            print('done')
+      except ValueError, e:
         print(e)
         print("Bad input! Try again:")
       finally:

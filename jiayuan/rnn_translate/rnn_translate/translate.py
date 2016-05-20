@@ -38,10 +38,11 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorflow.models.rnn.translate import seq2seq_model
-
 from rnn_translate.helper import LOGGER, useori_tokenizer, cut_tokenizer
 import data_utils
+import seq2seq_model
+from rnn_translate.beam_search import BeamSearch
+
 #LOGGER.info(sys.path)
 
 
@@ -238,6 +239,9 @@ def decode():
     sentence = sys.stdin.readline()
     while sentence:
       try:
+        use_bs, sentence = sentence.split()
+        use_bs = int(use_bs)
+
         # Get token-ids for the input sentence.
         token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab, tokenizer=tokenizer)
         if len(token_ids) >= _buckets[-1][0]:
@@ -246,22 +250,50 @@ def decode():
         # Which bucket does it belong to?
         bucket_id = min([b for b in xrange(len(_buckets))
                          if _buckets[b][0] > len(token_ids)])
-        # TODO
-        bucket_id = len(_buckets) - 1
-        # Get a 1-element batch to feed the sentence to the model.
-        encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-            {bucket_id: [(token_ids, [])]}, bucket_id)
-        # Get output logits for the sentence.
-        _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
-                                         target_weights, bucket_id, True)
-        # This is a greedy decoder - outputs are just argmaxes of output_logits.
-        outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
-        # If there is an EOS symbol in outputs, cut them at that point.
-        if data_utils.EOS_ID in outputs:
-            outputs = outputs[:outputs.index(data_utils.EOS_ID)]
-        # Print out French sentence corresponding to outputs.
-        print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
-      except Exception:
+        # TODO: indeed can produce longer answers, but with some repeat parts consequently
+        #bucket_id = len(_buckets) - 1
+
+        if use_bs:
+            ori_bucket_size = model.buckets[bucket_id][1]
+            def cal_function(decoder_token_ids, idx):
+                print('decoder_token_ids:', decoder_token_ids)
+                #model.buckets[bucket_id] = (model.buckets[bucket_id][0], idx)
+                # Get a 1-element batch to feed the sentence to the model.
+                encoder_inputs, decoder_inputs, target_weights = model.get_batch(
+                    {bucket_id: [(token_ids, decoder_token_ids)]}, bucket_id)
+                # Get output logits for the sentence.
+                _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+                                                 target_weights, bucket_id, True)
+                #print(np.shape(output_logits[idx-1]))
+                #print(output_logits[idx-1])
+                return output_logits[idx-1].reshape([-1])
+            beam_search = BeamSearch(beam_size=1)
+            beam_search.run(max_step=ori_bucket_size, cal_function=cal_function)
+            final_token_paths = beam_search.get_final_token_paths()
+            for outputs in final_token_paths:
+                print(outputs)
+                if data_utils.EOS_ID in outputs:
+                    outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+                # Print out French sentence corresponding to outputs.
+                print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+            #model.buckets[bucket_id] = (model.buckets[bucket_id][0], ori_bucket_size)
+        else:
+            # Get a 1-element batch to feed the sentence to the model.
+            encoder_inputs, decoder_inputs, target_weights = model.get_batch(
+                {bucket_id: [(token_ids, [])]}, bucket_id)
+            # Get output logits for the sentence.
+            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
+                                             target_weights, bucket_id, True)
+            # This is a greedy decoder - outputs are just argmaxes of output_logits.
+            outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+            print(outputs)
+            # If there is an EOS symbol in outputs, cut them at that point.
+            if data_utils.EOS_ID in outputs:
+                outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+            # Print out French sentence corresponding to outputs.
+            print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+      except NameError, e:
+        print(e)
         print("Bad input! Try again:")
       finally:
         print("> ", end="")

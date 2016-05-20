@@ -268,7 +268,7 @@ def decode():
                 #print(np.shape(output_logits[idx-1]))
                 #print(output_logits[idx-1])
                 return output_logits[idx-1].reshape([-1])
-            beam_search = BeamSearch(beam_size=1)
+            beam_search = BeamSearch(beam_size=5)
             beam_search.run(max_step=ori_bucket_size, cal_function=cal_function)
             final_token_paths = beam_search.get_final_token_paths()
             for outputs in final_token_paths:

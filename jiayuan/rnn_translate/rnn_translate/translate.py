@@ -280,6 +280,7 @@ def decode():
                 print('done')
             #model.buckets[bucket_id] = (model.buckets[bucket_id][0], ori_bucket_size)
         else:
+            model.use_beamsearch = False
             # Get a 1-element batch to feed the sentence to the model.
             encoder_inputs, decoder_inputs, target_weights = model.get_batch(
                 {bucket_id: [(token_ids, [])]}, bucket_id)

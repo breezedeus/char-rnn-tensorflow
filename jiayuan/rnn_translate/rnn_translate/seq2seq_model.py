@@ -69,6 +69,7 @@ class Seq2SeqModel(object):
       num_samples: number of samples for sampled softmax.
       forward_only: if set, we do not construct the backward pass in the model.
     """
+    self.use_beamsearch = True
     self.source_vocab_size = source_vocab_size
     self.target_vocab_size = target_vocab_size
     self.buckets = buckets
@@ -133,9 +134,12 @@ class Seq2SeqModel(object):
 
     # Training outputs and losses.
     if forward_only:
+      do_decode = False
+      if not self.use_beamsearch:
+        do_decode = True
       self.outputs, self.losses = tf.nn.seq2seq.model_with_buckets(
           self.encoder_inputs, self.decoder_inputs, targets,
-          self.target_weights, buckets, lambda x, y: seq2seq_f(x, y, False),
+          self.target_weights, buckets, lambda x, y: seq2seq_f(x, y, do_decode),
           softmax_loss_function=softmax_loss_function)
       # If we use output projection, we need to project outputs for decoding.
       if output_projection is not None:

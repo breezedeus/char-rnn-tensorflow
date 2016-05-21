@@ -69,6 +69,8 @@ tf.app.flags.DEFINE_boolean("self_test", False,
                             "Run a self-test if this is set to True.")
 tf.app.flags.DEFINE_boolean("use_ori", True,
                             "whether use original cn sentences, 0 for segmented cn sentences")
+tf.app.flags.DEFINE_integer("beam_size", 0,
+                            "beam size of beam search, 0 for no beam size")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -116,13 +118,13 @@ def read_data(source_path, target_path, max_size=None):
   return data_set
 
 
-def create_model(session, forward_only):
+def create_model(session, forward_only, use_beamsearch=False):
   """Create translation model and initialize or load parameters in session."""
   model = seq2seq_model.Seq2SeqModel(
       FLAGS.en_vocab_size, FLAGS.fr_vocab_size, _buckets,
       FLAGS.size, FLAGS.num_layers, FLAGS.max_gradient_norm, FLAGS.batch_size,
       FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
-      forward_only=forward_only)
+      forward_only=forward_only, use_beamsearch=use_beamsearch)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
   if ckpt and tf.gfile.Exists(ckpt.model_checkpoint_path):
     LOGGER.info("Reading model parameters from %s" % ckpt.model_checkpoint_path)
@@ -139,10 +141,14 @@ def train():
   LOGGER.info("Preparing WMT data in %s" % FLAGS.data_dir)
   if FLAGS.use_ori:
       tokenizer = useori_tokenizer
+      vocab_data_dir = os.path.join(FLAGS.data_dir, 'ori')
   else:
       tokenizer = cut_tokenizer
+      vocab_data_dir = os.path.join(FLAGS.data_dir, 'cut')
+  if not os.path.exists(vocab_data_dir):
+      os.makedirs(vocab_data_dir)
   en_train, fr_train, en_dev, fr_dev, _, _ = data_utils.prepare_wmt_data(
-      FLAGS.data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size, tokenizer=tokenizer)
+      FLAGS.data_dir, vocab_data_dir, FLAGS.en_vocab_size, FLAGS.fr_vocab_size, tokenizer=tokenizer)
 
   with tf.Session() as sess:
     # Create model.
@@ -218,17 +224,23 @@ def train():
 def decode():
   with tf.Session() as sess:
     # Create model and load parameters.
-    model = create_model(sess, True)
+    if FLAGS.beam_size > 0:
+        use_beamsearch = True
+    else:
+        use_beamsearch = False
+    model = create_model(sess, True, use_beamsearch=use_beamsearch)
     model.batch_size = 1  # We decode one sentence at a time.
     if FLAGS.use_ori:
       tokenizer = useori_tokenizer
+      vocab_data_dir = os.path.join(FLAGS.data_dir, 'ori')
     else:
       tokenizer = cut_tokenizer
+      vocab_data_dir = os.path.join(FLAGS.data_dir, 'cut')
 
     # Load vocabularies.
-    en_vocab_path = os.path.join(FLAGS.data_dir,
+    en_vocab_path = os.path.join(vocab_data_dir,
                                  "vocab%d.q" % FLAGS.en_vocab_size)
-    fr_vocab_path = os.path.join(FLAGS.data_dir,
+    fr_vocab_path = os.path.join(vocab_data_dir,
                                  "vocab%d.a" % FLAGS.fr_vocab_size)
     en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
     _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
@@ -239,10 +251,6 @@ def decode():
     sentence = sys.stdin.readline()
     while sentence:
       try:
-        use_bs, sentence = sentence.split()
-        use_bs = int(use_bs)
-        print('use_bs: ', str(use_bs))
-
         # Get token-ids for the input sentence.
         token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab, tokenizer=tokenizer)
         if len(token_ids) >= _buckets[-1][0]:
@@ -254,11 +262,9 @@ def decode():
         # TODO: indeed can produce longer answers, but with some repeat parts consequently
         #bucket_id = len(_buckets) - 1
 
-        if use_bs:
-            ori_bucket_size = model.buckets[bucket_id][1]
+        if FLAGS.beam_size > 0:
             def cal_function(decoder_token_ids, idx):
                 print('decoder_token_ids:', decoder_token_ids)
-                #model.buckets[bucket_id] = (model.buckets[bucket_id][0], idx)
                 # Get a 1-element batch to feed the sentence to the model.
                 encoder_inputs, decoder_inputs, target_weights = model.get_batch(
                     {bucket_id: [(token_ids, decoder_token_ids)]}, bucket_id)
@@ -268,8 +274,8 @@ def decode():
                 #print(np.shape(output_logits[idx-1]))
                 #print(output_logits[idx-1])
                 return output_logits[idx-1].reshape([-1])
-            beam_search = BeamSearch(beam_size=5)
-            beam_search.run(max_step=ori_bucket_size, cal_function=cal_function)
+            beam_search = BeamSearch(beam_size=FLAGS.beam_size)
+            beam_search.run(max_step=model.buckets[bucket_id][1], cal_function=cal_function)
             final_token_paths = beam_search.get_final_token_paths()
             for outputs in final_token_paths:
                 print(outputs)
@@ -278,7 +284,6 @@ def decode():
                 # Print out French sentence corresponding to outputs.
                 print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
                 print('done')
-            #model.buckets[bucket_id] = (model.buckets[bucket_id][0], ori_bucket_size)
         else:
             model.use_beamsearch = False
             # Get a 1-element batch to feed the sentence to the model.

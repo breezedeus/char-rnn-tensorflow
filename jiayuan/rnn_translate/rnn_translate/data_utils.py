@@ -182,7 +182,7 @@ def data_to_token_ids(data_path, target_path, vocabulary_path,
           tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")
 
 
-def prepare_wmt_data(data_dir, q_vocabulary_size, a_vocabulary_size, tokenizer=None):
+def prepare_wmt_data(data_dir, output_data_dir, q_vocabulary_size, a_vocabulary_size, tokenizer=None):
   """Get WMT data into data_dir, create vocabularies and tokenize data.
 
   Args:
@@ -207,22 +207,22 @@ def prepare_wmt_data(data_dir, q_vocabulary_size, a_vocabulary_size, tokenizer=N
 
   # Create vocabularies of the appropriate sizes.
   LOGGER.info("Create vocabularies of the appropriate sizes")
-  a_vocab_path = os.path.join(data_dir, "vocab%d.a" % a_vocabulary_size)
-  q_vocab_path = os.path.join(data_dir, "vocab%d.q" % q_vocabulary_size)
+  a_vocab_path = os.path.join(output_data_dir, "vocab%d.a" % a_vocabulary_size)
+  q_vocab_path = os.path.join(output_data_dir, "vocab%d.q" % q_vocabulary_size)
   create_vocabulary(a_vocab_path, train_path + ".a", a_vocabulary_size, tokenizer)
   create_vocabulary(q_vocab_path, train_path + ".q", q_vocabulary_size, tokenizer)
 
   # Create token ids for the training data.
   LOGGER.info("Create token ids for the training data")
-  a_train_ids_path = train_path + (".ids%d.a" % a_vocabulary_size)
-  q_train_ids_path = train_path + (".ids%d.q" % q_vocabulary_size)
+  a_train_ids_path = os.path.join(output_data_dir, "train.ids%d.a" % a_vocabulary_size)
+  q_train_ids_path = os.path.join(output_data_dir, "train.ids%d.q" % q_vocabulary_size)
   data_to_token_ids(train_path + ".a", a_train_ids_path, a_vocab_path, tokenizer)
   data_to_token_ids(train_path + ".q", q_train_ids_path, q_vocab_path, tokenizer)
 
   # Create token ids for the development data.
   LOGGER.info("Create token ids for the development data")
-  a_dev_ids_path = dev_path + (".ids%d.a" % a_vocabulary_size)
-  q_dev_ids_path = dev_path + (".ids%d.q" % q_vocabulary_size)
+  a_dev_ids_path = os.path.join(output_data_dir, "dev.ids%d.a" % a_vocabulary_size)
+  q_dev_ids_path = os.path.join(output_data_dir, "dev.ids%d.q" % q_vocabulary_size)
   data_to_token_ids(dev_path + ".a", a_dev_ids_path, a_vocab_path, tokenizer)
   data_to_token_ids(dev_path + ".q", q_dev_ids_path, q_vocab_path, tokenizer)
 

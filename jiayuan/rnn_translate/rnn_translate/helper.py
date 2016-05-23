@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import os
 import jieba
+import numpy as np
 
 def get_logger(name):
     import logging
@@ -59,3 +60,15 @@ def tokenize_cn(input_file, output_file, sep=' '):
             for line in in_f:
                 seg_list = cut_line(line.strip())
                 out_f.write(sep.join(seg_list).encode('utf-8') + '\n')
+
+
+def sigmoid(inputs):
+    copy_inputs = np.copy(inputs)
+    copy_inputs[copy_inputs < -30.0] = -30.0
+    return 1.0 / (1.0 + np.exp(-copy_inputs))
+
+
+def log_sigmoid(inputs):
+    inputs = inputs - inputs.max()
+    log_denos = np.log(np.exp(inputs).sum())
+    return inputs - log_denos

@@ -38,7 +38,7 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from rnn_translate.helper import LOGGER, useori_tokenizer, cut_tokenizer
+from rnn_translate.helper import LOGGER, useori_tokenizer, cut_tokenizer, log_sigmoid
 import data_utils
 import seq2seq_model
 from rnn_translate.beam_search import BeamSearch
@@ -273,7 +273,8 @@ def decode():
                                                  target_weights, bucket_id, True)
                 #print(np.shape(output_logits[idx-1]))
                 #print(output_logits[idx-1])
-                return output_logits[idx-1].reshape([-1])
+                fake_logits = output_logits[idx-1].reshape([-1])
+                return log_sigmoid(inputs=fake_logits)
             beam_search = BeamSearch(beam_size=FLAGS.beam_size)
             beam_search.run(max_step=model.buckets[bucket_id][1], cal_function=cal_function)
             final_token_paths = beam_search.get_final_token_paths()

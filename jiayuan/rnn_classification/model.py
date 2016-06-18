@@ -54,8 +54,8 @@ class Model():
             """
             if use_lastone:
                 return outputs[-1]
-            output = tf.math_ops.add_n(outputs)
-            output = tf.math_ops.div(output, len(outputs))
+            output = tf.add_n(outputs)
+            output = tf.div(output, len(outputs))
             return output
         output = handle_outputs(use_lastone=False)
         # shape(logits) = (batch_size, vocab_size)
@@ -73,7 +73,7 @@ class Model():
         self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
         _ = tf.scalar_summary('accuracy', self.accuracy)
 
-        self.final_state = states[-1]
+        self.final_state = states
         self.lr = tf.Variable(0.0, trainable=False)
         tvars = tf.trainable_variables()
         grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, tvars),
